@@ -3,13 +3,15 @@
 Created on Tue Oct 31 11:12:08 2017
 
 @author: esilgard
+
+make pie charts for quick snapshots of data element breakdown
 """
 import os
 import json
 from random import choice
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config = json.load(open(dir_path + os.path.sep + 'config.json','r'))
+config = json.load(open(dir_path + os.path.sep + 'resources' + os.path.sep + 'config.json','r'))
 pattern_fills = config['pattern_fills']
 brand_colors = config['brand_colors']
 
@@ -52,6 +54,7 @@ def __format_chart(split_cells):
     """
     format colors and fill depending on size of data (this pulls colors and 
     patterns at random from config file for charts with many/unknown number of categories)
+    specifically for primary of liver mets, which may change at any time
     """
     points = []
     data_size = int(split_cells[-1]) - int(split_cells[0]) + 1
