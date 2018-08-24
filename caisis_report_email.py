@@ -3,11 +3,6 @@
 Created on Wed Nov 01 14:21:36 2017
 
 @author: esilgard
-
-email excel workbooks to appropriate email recipients
-currently dependant on the windows client
-email recipients should ONLY be consortium addresses, as 
-error messages currently contain PHI
 """
 
 

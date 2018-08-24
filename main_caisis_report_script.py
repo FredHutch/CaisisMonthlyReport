@@ -7,14 +7,13 @@ Created on Tue Nov 15 13:47:24 2016
 
 '''
 query caisis disease groups for basic counts of data elements for a report
-write counts and charts to excel then email workbooks
+write counts and charts to excel
 
-for all patients in disease group:
-•	Age brackets for diagnosis age and current age (at time of query)
-•	Gender breakdown
-•	Some record of Medical (Chemo)Therapy YES/NO,
-•	Some record of Radiation Therapy YES/NO
-•	At least one Oncoplex Test results YES/NO
+•	Age brackets for diagnosis age and current age
+•	Gender
+•	MedTx yes/no,
+•	RadTx yes/no
+•	Oncoplex results yes/no
 
 '''
 
@@ -31,27 +30,20 @@ import caisis_report_email as email
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-config = json.load(open(dir_path + os.path.sep + 'resources' + os.path.sep + 'config.json','r'))
-
-# formatting variables for excel workbooks and graphs
+config = json.load(open(dir_path + os.path.sep + 'config.json','r'))
 pattern_fills = config['pattern_fills']
 brand_colors = config['brand_colors']
 ###############################################################################
+## disease groups should be a string match to those listed in the Status table
 err_msg = ''
 
-# "formatted" disease group ensures there are no spaces in the workbook names and sheets
-# query string may vary depending on the way the disease group is defined
-# the majority by status = Alive date/disease(s) and GU is defined by updated "ActionForms"
 for formatted_dz, query_string in config['dz_groups'].items():
     
-    # need to be internal emails, as error messages may include PHI
     email_recipients = ';'.join(config["email_recipients"])
     ## pyodbc connection string details
     inst = 'vanilla'
     if formatted_dz == 'Prostate':
         inst = 'gu'
-   
-    # get appropriate server and database names from config file
     connStr = ('DRIVER=' + config[inst + '_caisis']['driver'] + ';SERVER=' + \
                config[inst + '_caisis']['server'] +';DATABASE=' + \
                config[inst + '_caisis']['database'] +';Trusted_Connection=yes')    
@@ -63,7 +55,7 @@ for formatted_dz, query_string in config['dz_groups'].items():
     patients, dx, demographics, med_tx, rad_tx, oncoplex, primaries = \
         data.get(cur, formatted_dz, query_string) 
     workbook_name = formatted_dz + 'CaisisReport.xlsx' 
-    # formatted_dz because the space in names is a prob in worksheet ref ranges
+    # the space seems to be problematic in worksheet reference ranges
     workbook = xlsxwriter.Workbook(workbook_name)
     # format to use in the merged range (first cell in worksheet)
     merge_format = workbook.add_format({'bold': 1,'border': 8,'align': 'center',
@@ -77,7 +69,11 @@ for formatted_dz, query_string in config['dz_groups'].items():
     worksheet = workbook.add_worksheet(formatted_dz)
     # Add the worksheet data that the charts will refer to.
     worksheet.merge_range('A1:C1', str(len(patients)) + ' Total Patients', merge_format)
-    all_genders = [y[0] for y in demographics.values()]
+    # gender space needs to be binary to not mess up the cell references
+    gender_errs = [y[-1] for y in demographics.values() if y[0] not in ['Male','Female']]
+    if gender_errs:
+        err_msg += "No gender for MRN(s): " + ",".join(gender_errs) + '\n'
+    all_genders = [y[0] for y in demographics.values() if y[-1] not in gender_errs]
     gender_list = sorted(list(set(all_genders)))
     
     def add_table(title, t1, labels, l1, values, v1):
@@ -87,22 +83,24 @@ for formatted_dz, query_string in config['dz_groups'].items():
     
         
     add_table('Gender', 'A2', ['Male', 'Female'], 'A3', [all_genders.count(h) for h in gender_list], 'B3')
-    add_table('MedTx', 'D2', ['At Least 1', 'None'], 'D3', [len(med_tx),len(patients)-len(med_tx)], 'E3')
-    add_table('RadTx', 'G2', ['At Least 1', 'None'], 'G3', [len(rad_tx),len(patients)-len(rad_tx)], 'H3')
-    add_table('Oncoplex', 'J2', ['At Least 1', 'None'],'J3', [len(oncoplex),len(patients)-len(oncoplex)], 'K3')
-    
-    # primary tumor site breakdown for liver mets cases (since they come from other disease groups)
-    if formatted_dz == 'LiverMets':
+    add_table('MedTx', 'E2', ['At Least 1', 'None'], 'E3', [len(med_tx),len(patients)-len(med_tx)], 'F3')
+    add_table('RadTx', 'I2', ['At Least 1', 'None'], 'I3', [len(rad_tx),len(patients)-len(rad_tx)], 'J3')
+    add_table('Oncoplex', 'M2', ['At Least 1', 'None'],'M3', [len(oncoplex),len(patients)-len(oncoplex)], 'N3')
+    #primary tumor sites for liver mets cases
+    if formatted_dz in ['LiverMets','Brain','Colorectal','MultipleMyeloma']:
+        # Set the column width and format.
+        worksheet.set_column('R:R', 20)
         prim_desc = sorted(primaries.items(), key=lambda x: x[1], reverse = True)
-        add_table('Primary', 'M2', [p[0].replace(' Cancer','') for p in prim_desc], 
-            'M3', [p[1] for p in prim_desc], 'N3' )
+        add_table('Primary', 'R2', [p[0].replace(' Cancer','') for p in prim_desc], 
+            'R3', [p[1] for p in prim_desc], 'S3' )
     
-    pie_chart_space = [('Gender', 'A', '3:4', 's'),('MedTx', 'D', '3:4', 's'),
-        ('RadTx','G', '3:4', 's'),('OPX','J', '3:4', 's')]
-    if formatted_dz == 'LiverMets':
-        pie_chart_space.append(('Primary','M','3:' + str(3+len(primaries)-1), 'l'))
+    pie_chart_space = [('Gender', 'A', '3:4', 's'),('MedTx', 'E', '3:4', 's'),
+        ('RadTx','I', '3:4', 's'),('OPX','M', '3:4', 's')]
+    if formatted_dz in ['LiverMets','Brain']:
+        pie_chart_space.append(('Primary','R','3:' + str(3+len(primaries)-1), 'l'))
     
     worksheet = pie.add(worksheet, pie_chart_space, workbook, formatted_dz)
+    #worksheet = pie.add(worksheet, ('Primary','M'), workbook)
     dod = dict((a[0],a[1][2]) for a in demographics.items() if a[1][2] is not None)
     dob = dict((a[0],a[1][1]) for a in demographics.items())
     current_age_counts, dx_age_counts, buckets1, buckets2, err_msg = \
