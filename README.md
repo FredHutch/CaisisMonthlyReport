@@ -5,5 +5,7 @@ Query Caisis database(s) based on metadata in config file (should be placed in t
 
 run from main_caisis_report_script.py
 
-### /resources:
+### required argument (argv[1])
 * config.json: contains DB connection details, seperate queries for cohort definition per disease group, as well as formatting variables for excel worksheets and report recipient emails
+
+a config file without specific email addresses and connection strings can be found @ example_config.json

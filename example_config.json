@@ -1,0 +1,34 @@
+{
+	"email_recipients": [
+		"recipient1@domain.com;recipient2@domain.org"
+		],
+	"vanilla_caisis":{
+		"database": "database_name",
+		"server": "server_name",
+		"driver": "{SQL Server}"
+		
+	},
+	"gu_caisis":{
+		"database": "database_name",
+		"server": "server_name",
+		"driver": "{SQL Server}"
+	},
+	"sttr_gu_team": "('username1','username2','username3')"
+	,
+	"dz_groups": {
+		"HeadNeck":"Status.StatusDisease='HeadNeck'",
+		"LungCancer":"Status.StatusDisease='Lung Cancer'",
+		"Brain":"(Status.StatusDisease='Brain' or Status.StatusDisease = 'Spine' or Status.StatusDisease like '%Pituitary Adenoma%')",
+		"Sarcoma":"Status.StatusDisease='Sarcoma'",
+		"Lymphoma":"Status.StatusDisease LIKE '%Lymphoma'",
+		"SalivaryCancer":"Status.StatusDisease='Salivary Cancer'",
+		"Colorectal":"(Status.StatusDisease='Colon Cancer' OR Status.StatusDisease='Rectal Cancer' OR Status.StatusDisease='Colorectal Cancer')",
+		"MultipleMyeloma":"(Status.StatusDisease LIKE '%Myeloma' OR Status.StatusDisease='Plasma Cell Neoplasm')",
+		"Pancreas":"Status.StatusDisease='Pancreas Cancer'",
+		"LiverPrimary":"Status.StatusDisease='Liver Cancer'",
+		"LiverMets":"Status.StatusSite like '%liver%'",
+		"Prostate":"Status.StatusDisease='Prostate Cancer'"
+    },
+	"brand_colors":["#123054","#39b6b9","#207c7e","#000000","#808080","#d8d8d8"],
+	"pattern_fills":["light_downward_diagonal","dark_upward_diagonal","percent_5","percent_25","percent_75","light_horizontal","light_vertical","narrow_vertical","large_confetti","zigzag","percent_90","wave","plaid","weave","diagonal_brick","small_check","trellis","shingle","dotted_grid","divot","outlined_diamond"]
+}
