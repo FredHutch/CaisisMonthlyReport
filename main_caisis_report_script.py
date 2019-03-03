@@ -21,6 +21,8 @@ import xlsxwriter
 import pyodbc
 import os
 import json
+from datetime import datetime
+import calendar
 
 import caisis_report_bucket_ages as age
 import caisis_report_data as data
@@ -33,6 +35,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 config = json.load(open(dir_path + os.path.sep + 'config.json','r'))
 pattern_fills = config['pattern_fills']
 brand_colors = config['brand_colors']
+out_dir = config['output_directory']
 ###############################################################################
 ## disease groups should be a string match to those listed in the Status table
 err_msg = ''
@@ -54,9 +57,9 @@ for formatted_dz, query_string in config['dz_groups'].items():
     ## query database
     patients, dx, demographics, med_tx, rad_tx, oncoplex, primaries = \
         data.get(cur, formatted_dz, query_string) 
-    workbook_name = formatted_dz + 'CaisisReport.xlsx' 
+    workbook_name = formatted_dz + 'CaisisReport_' + calendar.month_abbr[datetime.now().month] + str(datetime.now().year) + '.xlsx' 
     # the space seems to be problematic in worksheet reference ranges
-    workbook = xlsxwriter.Workbook(workbook_name)
+    workbook = xlsxwriter.Workbook(out_dir + os.path.sep + workbook_name)
     # format to use in the merged range (first cell in worksheet)
     merge_format = workbook.add_format({'bold': 1,'border': 8,'align': 'center',
         'valign': 'vcenter','fg_color': '#e9e9e9'})
@@ -74,7 +77,8 @@ for formatted_dz, query_string in config['dz_groups'].items():
     if gender_errs:
         err_msg += "No gender for MRN(s): " + ",".join(gender_errs) + '\n'
     all_genders = [y[0] for y in demographics.values() if y[-1] not in gender_errs]
-    gender_list = sorted(list(set(all_genders)))
+    gender_list = ['Male','Female']
+    #gender_list = sorted(list(set(all_genders)))
     
     def add_table(title, t1, labels, l1, values, v1):
         worksheet.write_row(t1, [title, 'Counts'], table_format_bold)
@@ -111,6 +115,7 @@ for formatted_dz, query_string in config['dz_groups'].items():
     
     worksheet = bar.add(workbook, worksheet, bar_chart_space, table_format_bold, formatted_dz)
     workbook.close()
-
-email.send(email_recipients, err_msg, dir_path, config['dz_groups'].keys())
+with open(out_dir + '/err_msg_' + calendar.month_abbr[datetime.now().month] + str(datetime.now().year) + '.txt','w') as err_out:
+    err_out.write(err_msg)
+#email.send(email_recipients, err_msg, dir_path, config['dz_groups'].keys())
     

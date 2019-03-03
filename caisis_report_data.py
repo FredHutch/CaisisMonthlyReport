@@ -8,7 +8,8 @@ import json
 import os
 dir_path = os.path.dirname(os.path.realpath(__file__))
 config = json.load(open(dir_path + os.path.sep + 'config.json','r'))
-STTR_TEAM = config["sttr_gu_team"]
+STTR_GU_TEAM = config["sttr_gu_team"]
+STTR_BR_TEAM = config["sttr_breast_team"]
 def get(cur, formatted_dz_group, query_disease_groups):
     '''
     get patient counts, demographics, and clinical data from caisis
@@ -17,8 +18,11 @@ def get(cur, formatted_dz_group, query_disease_groups):
 
     if formatted_dz_group == 'Prostate':
         pt_query_string = "SELECT distinct PatientId, ActionDate FROM Actions WHERE \
-            (UpdatedBy in " + STTR_TEAM + " OR EnteredBy in " + STTR_TEAM + ')'
-    
+            (UpdatedBy in " + STTR_GU_TEAM + " OR EnteredBy in " + STTR_GU_TEAM + ")"
+    elif formatted_dz_group == 'Breast':
+        pt_query_string = "SELECT distinct PatientId, StatusDate FROM Status WHERE \
+            (UpdatedBy in " + STTR_BR_TEAM + " OR EnteredBy in " + STTR_BR_TEAM + \
+            ") AND Status.StatusDisease = 'Breast Cancer' and Status = 'Alive' "
     elif formatted_dz_group == 'LiverMets':
         pt_query_string = "SELECT distinct PatientId, StatusDate FROM Status WHERE \
             Status.Status = 'Metastatic Disease' "
@@ -45,8 +49,7 @@ def get(cur, formatted_dz_group, query_disease_groups):
     #print fuzzy_dx, 'patients with fuzzy diagnosis date'
     #print out basic patient counts - sanity check
     print (formatted_dz_group + '-' + str(len(patients)))
-    
-    ## basic demographic data
+        ## basic demographic data
     cur.execute("SELECT PatientId, PtGender, PtBirthDate, PtDeathDate, PtMRN FROM \
     Patients WHERE PatientId in ('" + "','".join(patients) + "')")
     demographics = dict((x[0],x[1:]) for x in cur.fetchall())
