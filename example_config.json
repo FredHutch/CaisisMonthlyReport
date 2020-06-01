@@ -1,20 +1,21 @@
 {
 	"email_recipients": [
-		"recipient1@domain.com;recipient2@domain.org"
+		"username1@domain.org;username2@domain.org"
 		],
+	"output_directory":"path_to_output_directory",
 	"vanilla_caisis":{
-		"database": "database_name",
-		"server": "server_name",
+		"database": "database",
+		"server": "server",
 		"driver": "{SQL Server}"
 		
 	},
 	"gu_caisis":{
-		"database": "database_name",
-		"server": "server_name",
+		"database": "GU_database",
+		"server": "GU_server",
 		"driver": "{SQL Server}"
 	},
-	"sttr_gu_team": "('username1','username2','username3')"
-	,
+	"sttr_gu_team": "('kcolevas','kpanthav','sbhanush','pshetty','dthakkar','aomanaku','kjaggi','smishra','jbhere','ggunna','ndevkar','djasnaik','rjaiswal','aomanaku','supadhya','jingale','smallick')",
+	"sttr_breast_team": "('kcolevas','athoppil','achavan')",
 	"dz_groups": {
 		"HeadNeck":"Status.StatusDisease='HeadNeck'",
 		"LungCancer":"Status.StatusDisease='Lung Cancer'",
@@ -27,7 +28,9 @@
 		"Pancreas":"Status.StatusDisease='Pancreas Cancer'",
 		"LiverPrimary":"Status.StatusDisease='Liver Cancer'",
 		"LiverMets":"Status.StatusSite like '%liver%'",
-		"Prostate":"Status.StatusDisease='Prostate Cancer'"
+		"Prostate":"Status.StatusDisease='Prostate Cancer'",
+		"Thyroid":"Status.StatusDisease='Thyroid Cancer'",
+		"Breast":"Status.StatusDisease='Breast Cancer'"
     },
 	"brand_colors":["#123054","#39b6b9","#207c7e","#000000","#808080","#d8d8d8"],
 	"pattern_fills":["light_downward_diagonal","dark_upward_diagonal","percent_5","percent_25","percent_75","light_horizontal","light_vertical","narrow_vertical","large_confetti","zigzag","percent_90","wave","plaid","weave","diagonal_brick","small_check","trellis","shingle","dotted_grid","divot","outlined_diamond"]
